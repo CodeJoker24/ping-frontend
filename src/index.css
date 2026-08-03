@@ -11,3 +11,22 @@
   background: #334155;
   border-radius: 9999px;
 }
+
+
+
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0.75rem);
+}
+
+
+@media (max-width: 768px) {
+  .safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 0.75rem), 0.75rem);
+  }
+  
+  
+  input {
+    font-size: 16px !important;
+  }
+}
