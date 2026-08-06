@@ -16,7 +16,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         
-        {/* Protected Chat Route */}
+  
         <Route 
           path="/chat" 
           element={

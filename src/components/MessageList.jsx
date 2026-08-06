@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Smile, Trash2, Edit2, FileText, MoreVertical } from 'lucide-react';
+import { Smile, Trash2, Edit2, FileText, MoreVertical, X } from 'lucide-react';
 
 export default function MessageList({
   messages,
@@ -16,10 +16,18 @@ export default function MessageList({
   handleToggleReaction
 }) {
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [showReactionPicker, setShowReactionPicker] = useState(null);
   const EMOJI_OPTIONS = ['👍', '❤️', '🔥', '😂', '🎉'];
 
   const toggleMenu = (messageId) => {
     setOpenMenuId(openMenuId === messageId ? null : messageId);
+    setShowReactionPicker(null);
+  };
+
+  const toggleReactionPicker = (messageId, e) => {
+    e.stopPropagation();
+    setShowReactionPicker(showReactionPicker === messageId ? null : messageId);
+    setOpenMenuId(null);
   };
 
   if (loadingHistory) {
@@ -43,6 +51,7 @@ export default function MessageList({
           const isTemp = msg.id.toString().startsWith('temp-');
           const senderName = isMe ? 'You' : (msg.sender?.username || 'User');
           const isMenuOpen = openMenuId === msg.id;
+          const isReactionPickerOpen = showReactionPicker === msg.id;
 
           return (
             <div
@@ -176,7 +185,7 @@ export default function MessageList({
                   </div>
 
                   {/* Mobile three-dot menu */}
-                  <div className="md:hidden flex items-start self-start">
+                  <div className="md:hidden flex items-start self-start relative">
                     <button
                       onClick={() => toggleMenu(msg.id)}
                       className="p-1 text-slate-500 hover:text-slate-300 rounded hover:bg-slate-800/50 transition-all"
@@ -194,10 +203,7 @@ export default function MessageList({
                           isMe ? 'right-0 top-8' : 'left-0 top-8'
                         }`}>
                           <button
-                            onClick={() => {
-                              handleToggleReaction(msg.id, '👍');
-                              setOpenMenuId(null);
-                            }}
+                            onClick={(e) => toggleReactionPicker(msg.id, e)}
                             className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg transition-all"
                           >
                             <Smile className="w-3.5 h-3.5" />
@@ -229,6 +235,40 @@ export default function MessageList({
                               </button>
                             </>
                           )}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Mobile Reaction Picker */}
+                    {isReactionPickerOpen && (
+                      <>
+                        <div 
+                          className="fixed inset-0 z-40"
+                          onClick={() => setShowReactionPicker(null)}
+                        />
+                        <div className={`absolute z-50 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl shadow-black/50 p-2 ${
+                          isMe ? 'right-0 top-8' : 'left-0 top-8'
+                        }`}>
+                          <div className="flex items-center gap-1">
+                            {EMOJI_OPTIONS.map((emoji) => (
+                              <button
+                                key={emoji}
+                                onClick={() => {
+                                  handleToggleReaction(msg.id, emoji);
+                                  setShowReactionPicker(null);
+                                }}
+                                className="hover:bg-slate-800 p-2 rounded-lg text-xl transition-all hover:scale-110"
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                            <button
+                              onClick={() => setShowReactionPicker(null)}
+                              className="hover:bg-slate-800 p-2 rounded-lg text-slate-400 transition-all"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </>
                     )}

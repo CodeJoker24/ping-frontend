@@ -93,11 +93,29 @@ export default function ChatPage() {
     const handleRemovedFromGroup = ({ groupId }) => {
       setGroups((prev) => prev.filter((g) => g.id !== groupId));
       toast.error('You were removed from a group.');
+
+      // Reset to default channel if user is currently inside this group
+      if (activeRoom === groupId) {
+        if (channels.length > 0) {
+          setActiveRoom(channels[0].name);
+          setActiveRoomName(channels[0].name);
+          setActiveRoomType('channel');
+        }
+      }
     };
 
     const handleGroupDeleted = ({ groupId }) => {
       setGroups((prev) => prev.filter((g) => g.id !== groupId));
       toast.error('Group was deleted by admin.');
+
+      // Reset to default channel if user is currently inside the deleted group
+      if (activeRoom === groupId) {
+        if (channels.length > 0) {
+          setActiveRoom(channels[0].name);
+          setActiveRoomName(channels[0].name);
+          setActiveRoomType('channel');
+        }
+      }
     };
 
     const handleMessageEdited = (upd) => setMessages((prev) => prev.map((m) => (m.id === upd.id ? upd : m)));
@@ -140,7 +158,7 @@ export default function ChatPage() {
       socket.off('user_typing', handleUserTyping);
       socket.off('user_stop_typing', handleUserStopTyping);
     };
-  }, []);
+  }, [activeRoom, channels]);
 
   useEffect(() => {
     const handleReceiveMessage = (newMsg) => {

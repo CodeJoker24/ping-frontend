@@ -22,6 +22,9 @@ export default function ChatHeader({
     }
   };
 
+  
+  const memberCount = activeGroupData?.group_members?.length || 0;
+
   return (
     <header className="h-14 px-4 md:px-6 border-b border-slate-800/40 flex items-center justify-between bg-slate-900/50 backdrop-blur-sm shrink-0">
       <div className="flex items-center gap-3 min-w-0">
@@ -43,7 +46,7 @@ export default function ChatHeader({
             </h2>
             <p className="text-[11px] text-slate-400 truncate">
               {activeRoomType === 'channel' && 'Public channel'}
-              {activeRoomType === 'group' && `${activeGroupData?.members?.length || 0} members`}
+              {activeRoomType === 'group' && `${memberCount} ${memberCount === 1 ? 'member' : 'members'}`}
               {activeRoomType === 'dm' && 'Direct message'}
             </p>
           </div>
@@ -53,10 +56,10 @@ export default function ChatHeader({
       {activeRoomType === 'group' && activeGroupData && (
         <button
           onClick={onOpenGroupSettings}
-          className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 text-xs font-medium rounded-lg border border-slate-700/30 hover:border-slate-600/50 transition-all"
+          className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-800/50 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium rounded-xl border border-slate-700/30 transition-all cursor-pointer"
         >
-          <Settings className="w-4 h-4 text-indigo-400" />
-          <span>Settings</span>
+          <Settings className="w-3.5 h-3.5 text-slate-400" />
+          <span>Group Settings</span>
         </button>
       )}
     </header>
