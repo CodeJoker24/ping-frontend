@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Hash, Plus, MessageCircle, LogOut, Users, X, ChevronDown, ChevronRight } from 'lucide-react';
 import api from '../lib/api';
-import socket from '../lib/socket'; // Make sure the path matches your socket instance location
+import socket from '../lib/socket';
 
 export default function Sidebar({
   currentUser,
@@ -27,15 +27,12 @@ export default function Sidebar({
     dms: false
   });
 
-  // Local state to manage friends dynamically in real-time
   const [friendsList, setFriendsList] = useState(initialFriends);
 
-  // Sync state if initialProps change from parent
   useEffect(() => {
     setFriendsList(initialFriends);
   }, [initialFriends]);
 
-  // Fetch updated friends list from the backend
   const fetchFriends = async () => {
     if (!currentUser?.id) return;
     try {
@@ -46,11 +43,9 @@ export default function Sidebar({
     }
   };
 
-  // Real-time Socket.io listener for instant friend updates
   useEffect(() => {
     if (!currentUser?.id) return;
 
-    // Listen for the socket event sent by the server
     socket.on("friend_added", fetchFriends);
 
     return () => {
@@ -155,7 +150,6 @@ export default function Sidebar({
         </div>
 
         <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-slate-800 scrollbar-thumb-slate-700">
-          {/* Channels */}
           <div className="p-2">
             <SectionHeader 
               title="Channels" 
@@ -171,7 +165,6 @@ export default function Sidebar({
                   return (
                     <RoomItem
                       key={room.id}
-                      id={room.id}
                       name={room.name}
                       icon={Hash}
                       isActive={isActive}
@@ -184,7 +177,6 @@ export default function Sidebar({
             )}
           </div>
 
-          {/* Groups */}
           <div className="p-2">
             <SectionHeader 
               title="Groups" 
@@ -203,7 +195,6 @@ export default function Sidebar({
                     return (
                       <RoomItem
                         key={group.id}
-                        id={group.id}
                         name={group.name}
                         icon={Users}
                         isActive={isActive}
@@ -217,7 +208,6 @@ export default function Sidebar({
             )}
           </div>
 
-          {/* Direct Messages */}
           <div className="p-2 pb-4">
             <SectionHeader 
               title="Direct Messages" 
@@ -239,7 +229,6 @@ export default function Sidebar({
                     return (
                       <RoomItem
                         key={friend.id}
-                        id={friend.id}
                         name={friend.username}
                         icon={MessageCircle}
                         isActive={isActive}
