@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { MessageSquare, Hash, Plus, UserPlus, MessageCircle, LogOut, Users, X, ChevronDown, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MessageSquare, Hash, Plus, MessageCircle, LogOut, Users, X, ChevronDown, ChevronRight } from 'lucide-react';
+import api from '../lib/api';
+import socket from '../lib/socket'; // Make sure the path matches your socket instance location
 
 export default function Sidebar({
   currentUser,
   channels = [],
   groups = [],
-  friends = [],
+  friends: initialFriends = [],
   activeRoom,
   mobileMenuOpen,
   setMobileMenuOpen,
@@ -25,7 +27,38 @@ export default function Sidebar({
     dms: false
   });
 
-  const uniqueFriends = Array.from(new Map(friends.map((f) => [f.id, f])).values());
+  // Local state to manage friends dynamically in real-time
+  const [friendsList, setFriendsList] = useState(initialFriends);
+
+  // Sync state if initialProps change from parent
+  useEffect(() => {
+    setFriendsList(initialFriends);
+  }, [initialFriends]);
+
+  // Fetch updated friends list from the backend
+  const fetchFriends = async () => {
+    if (!currentUser?.id) return;
+    try {
+      const res = await api.get(`/api/friends/${currentUser.id}`);
+      setFriendsList(res.data || []);
+    } catch (err) {
+      console.error("Failed to load friends list:", err);
+    }
+  };
+
+  // Real-time Socket.io listener for instant friend updates
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    // Listen for the socket event sent by the server
+    socket.on("friend_added", fetchFriends);
+
+    return () => {
+      socket.off("friend_added", fetchFriends);
+    };
+  }, [currentUser?.id]);
+
+  const uniqueFriends = Array.from(new Map(friendsList.map((f) => [f.id, f])).values());
   const uniqueGroups = Array.from(new Map(groups.map((g) => [g.id, g])).values());
 
   const toggleSection = (section) => {
@@ -35,7 +68,7 @@ export default function Sidebar({
     }));
   };
 
-  const SectionHeader = ({ title, section, onAdd, icon: Icon, count }) => {
+  const SectionHeader = ({ title, section, onAdd, count }) => {
     const isCollapsed = collapsedSections[section];
     
     return (
@@ -56,7 +89,7 @@ export default function Sidebar({
         {onAdd && !isCollapsed && (
           <button
             onClick={onAdd}
-            className="p-1 hover:bg-slate-700/50 rounded-lg text-slate-400 hover:text-indigo-400 transition-all opacity-0 group-hover:opacity-100"
+            className="p-1 rounded-lg text-slate-400 hover:text-indigo-400 transition-all hover:bg-slate-700/50 opacity-100"
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
@@ -65,7 +98,7 @@ export default function Sidebar({
     );
   };
 
-  const RoomItem = ({ id, name, icon: Icon, isActive, unread, onClick, showOnline, isOnline }) => (
+  const RoomItem = ({ name, icon: Icon, isActive, unread, onClick, showOnline, isOnline }) => (
     <button
       onClick={onClick}
       className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all group ${
@@ -198,7 +231,7 @@ export default function Sidebar({
                   <p className="px-3 py-2 text-xs text-slate-500 italic">No contacts yet</p>
                 ) : (
                   uniqueFriends.map((friend) => {
-                    const dmRoomId = [currentUser.id, friend.id].sort().join('_');
+                    const dmRoomId = [currentUser?.id, friend.id].sort().join('_');
                     const isActive = activeRoom === dmRoomId;
                     const isOnline = onlineUsers.includes(friend.id);
                     const unread = unreadCounts[dmRoomId] || 0;
@@ -228,12 +261,12 @@ export default function Sidebar({
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="relative shrink-0">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500/20 to-indigo-600/20 border border-indigo-500/30 flex items-center justify-center font-bold text-indigo-300 text-sm">
-                  {(currentUser.username || 'U')[0].toUpperCase()}
+                  {(currentUser?.username || 'U')[0].toUpperCase()}
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-900 shadow-sm shadow-emerald-500/30" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-slate-100 truncate">{currentUser.username || 'User'}</p>
+                <p className="text-sm font-medium text-slate-100 truncate">{currentUser?.username || 'User'}</p>
                 <p className="text-[10px] text-slate-400">
                   {onlineUsers.length} {onlineUsers.length === 1 ? 'member' : 'members'} online
                 </p>
