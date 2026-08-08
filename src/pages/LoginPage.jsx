@@ -44,37 +44,37 @@ export default function LoginPage() {
   };
 
  
-  const handleForgotPassword = async () => {
-    const { value: email } = await Swal.fire({
-      title: "Reset Password",
-      text: "Enter your account email to receive a password reset link.",
-      input: "email",
-      inputPlaceholder: "example@gmail.com",
-      showCancelButton: true,
-      confirmButtonText: "Send Reset Link",
-      confirmButtonColor: "#6366f1", 
-      cancelButtonColor: "#334155",
-      background: "#0f172a",
-      color: "#f8fafc",
-      inputValidator: (value) => {
-        if (!value) return "Email is required!";
-      }
-    });
-
-    if (email) {
-      const toastId = toast.loading("Sending reset link...");
-      try {
-        const res = await api.post('/api/password/forgot-password', {
-          email,
-          clientUrl: window.location.origin
-        });
-
-        toast.success(res.data.message || "Reset link sent!", { id: toastId });
-      } catch (err) {
-        toast.error(err.response?.data?.message || "Failed to send reset link.", { id: toastId });
-      }
+const handleForgotPassword = async () => {
+  const { value: email } = await Swal.fire({
+    title: "Reset Password",
+    text: "Enter your account email to receive a password reset link.",
+    input: "email",
+    inputPlaceholder: "example@gmail.com",
+    showCancelButton: true,
+    confirmButtonText: "Send Reset Link",
+    confirmButtonColor: "#6366f1",
+    cancelButtonColor: "#334155",
+    background: "#0f172a",
+    color: "#f8fafc",
+    inputValidator: (value) => {
+      if (!value) return "Email is required!";
     }
-  };
+  });
+
+  if (email) {
+    const toastId = toast.loading("Sending reset link...");
+    try {
+      const res = await api.post('/api/password/forgot-password', {
+        email,
+        clientUrl: window.location.origin
+      });
+
+      toast.success(res.data.message || "Reset link sent!", { id: toastId });
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send reset link.", { id: toastId });
+    }
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-indigo-500 selection:text-white">

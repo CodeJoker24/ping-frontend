@@ -13,37 +13,23 @@ export default function ResetPasswordPage() {
   const [accessToken, setAccessToken] = useState('');
 
   useEffect(() => {
-    // Extract access_token from URL hash (#access_token=...)
     const hash = window.location.hash;
     if (hash) {
       const params = new URLSearchParams(hash.replace('#', '?'));
       const token = params.get('access_token');
-      if (token) {
-        setAccessToken(token);
-      }
+      if (token) setAccessToken(token);
     }
   }, []);
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
-
-    if (!accessToken) {
-      return toast.error("Invalid or expired reset link. Please request a new one.");
-    }
-    if (newPassword !== confirmPassword) {
-      return toast.error("Passwords do not match!");
-    }
-    if (newPassword.length < 6) {
-      return toast.error("Password must be at least 6 characters.");
-    }
+    if (!accessToken) return toast.error("Invalid or expired reset link.");
+    if (newPassword !== confirmPassword) return toast.error("Passwords do not match!");
+    if (newPassword.length < 6) return toast.error("Password must be at least 6 characters.");
 
     setLoading(true);
     try {
-      await api.post('/api/password/reset-password', {
-        accessToken,
-        newPassword
-      });
-
+      await api.post('/api/password/reset-password', { accessToken, newPassword });
       toast.success("Password reset successfully! You can now log in.");
       navigate('/login');
     } catch (err) {
